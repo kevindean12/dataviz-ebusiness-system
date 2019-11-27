@@ -1,0 +1,59 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="style.css">
+    <title>Habitat</title>
+</head>
+<body>
+    <header>
+        <div class="bg-image"></div> 
+        <ul class="nav">
+            <li><a href="index.html" class="btn">Home</a></li>
+            <li><a href="cgi-bin/products.cgi" class="btn">Catalog</a></li>
+            <li><a href="register.html" class="btn">Register</a></li>
+        </ul>
+    </header>
+    <main class="register">  
+        
+        <!-- failedlogin goes here -->
+
+        <h1>Login</h1>
+
+        
+        <form action="cgi-bin/login.cgi" method="POST">
+            <div>
+                <label for="user">Username</label>
+                <input type="text" name="username" id="user" class="text-input">
+            </div>
+            <div>
+                <label for="pass">Password</label>
+                <input type="password" name="password" id="pass" class="text-input">
+            </div>
+            <div>
+                <h3>Which type of account do you have?</h3>
+            </div>
+            <div>
+                <input type="radio" name="usertype" id="individual" value="individual">
+                <label for="individual">Individual</label>
+                <input type="radio" name="usertype" id="business" value="business">
+                <label for="business">Business</label>
+                <input type="radio" name="usertype" id="staff" value="staff">
+                <label for="staff">Staff</label>
+            </div>
+            <div>
+                <input class="btn" type="submit" value="Submit">
+            </div>
+            
+        </form>
+    </main>  
+     <!-- Footer -->
+     <footer id="main-footer" class="grid">
+            <div>Habitat Data Storage and Visualization</div>
+            <div>Project by Kevin Dean
+                    <div>With thanks to <a href="http://traversymedia.com" target="_blank">Traversy Media</a> for layout/styling</div> 
+            </div>
+        </footer>
+</body>
+</html>

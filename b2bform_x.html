@@ -1,0 +1,48 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../style.css">
+    <title>Habitat</title>
+</head>
+<body>
+    <header>
+        <div class="bg-image"></div> 
+        <ul class="nav">
+            <li><a href="../index.html" class="btn">Home</a></li>
+        </ul>
+    </header>
+    <main class="register">
+        <h1>Make a B2B Order</h1>
+        <form action="b2border.cgi" method="POST">
+            <div>
+                <label for="teamID">Team ID</label>
+                b-f19-
+                <input type="number" name="teamID" id="teamID" class="text-input">
+                <label for="product">Product ID</label>
+                <input type="text" name="productorder" id="product" class="text-input">
+                <div>
+                    Please use the Product ID that the company gave you.
+                </div>
+            </div>
+            <div>
+                <label for="amount">Quantity</label>
+                <input type="number" name="quantity" id="amount" class="text-input">
+            </div>
+            <div>
+                <input class="btn" type="submit" value="Submit">
+            </div>
+            
+        </form>
+    </main>
+    
+     <!-- Footer -->
+     <footer id="main-footer" class="grid">
+            <div>Habitat Data Storage and Visualization</div>
+            <div>Project by Kevin Dean
+                    <div>With thanks to <a href="http://traversymedia.com" target="_blank">Traversy Media</a> for layout/styling</div> 
+            </div>
+        </footer>
+</body>
+</html>
