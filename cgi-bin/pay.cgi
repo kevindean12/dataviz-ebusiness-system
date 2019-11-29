@@ -21,10 +21,12 @@ def main():
     else:
         shipping_method = "Standard"
     
+    bank, ship, mayor, it = get_accounts_info()
+    
     #bank_info: (filebase, customername, myname, mypassword, myaccount)
     bank_info = businesses.get("bank")
     bank_order_file = bank_info[0]
-    QflagName_b, QnameAtC_b, QnameAtS_b, AflagName_b, AnameAtC_b, AnameAtS_b = flag_names(bank_order_file)
+    QflagName_b, QnameAtC_b, QnameAtS_b, AflagName_b, AnameAtC_b, AnameAtS_b = flag_names("bank")
     #[(name,photo,price,quantity, inventory)]
     products = get_cart(conn, uid)
     

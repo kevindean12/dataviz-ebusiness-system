@@ -10,9 +10,9 @@ import secrets
 businesses = { 
     "11020" : ("order", "Habitat", "deank", "habitat"),
     "bank" : ("bank", "Rondout", "deank", "12345","1234098767564534"),#(..., myaccount)
-    "mayor": ("tax", "CityHall", "deank", "12345"),
-    "shipping": ("shipping", "FedEx", "deank", "12345"),
-    "IT": ("IT", "Box", "deank", "12345"),
+    "mayor": ("mayor", "CityHall", "deank", "12345"),
+    "shipping": ("ship", "FedEx", "deank", "12345"),
+    "IT": ("it", "Box", "deank", "12345"),
     }
 
 def create_receipt(conn, sessionID):
@@ -287,12 +287,12 @@ def display_products(template_file, names, imgsrcs, descriptions, prices, invent
     return returnstr
 
 def flag_names(order_file):
-    QflagName = f"f-{order_file}.txt"
-    QnameAtC = f"{order_file}.txt"
+    QflagName = f"f-Q-{order_file}.txt"
+    QnameAtC = f"Q-{order_file}.txt"
     QnameAtS = f"{order_file}_s.txt"
-    AflagName = f"f-{order_file}_confirmation.txt"
-    AnameAtC = f"{order_file}_confirmation.txt"
-    AnameAtS = f"{order_file}_confirmation_s.txt"
+    AflagName = f"f-A-{order_file}.txt"
+    AnameAtC = f"A-{order_file}.txt"
+    AnameAtS = f"A-{order_file}_s.txt"
     return QflagName, QnameAtC, QnameAtS, AflagName, AnameAtC, AnameAtS
 
 def get_businessID(conn, business_name):
@@ -355,6 +355,15 @@ def get_confirmation(answer_file):
                 update_flag.write("0")
             flag.close()
             return answer
+#orderID,theirCustomerID,itemID,quantity,saleAmt,customerBank,shipMethod,shipAddress
+def get_accounts_info():
+    with open("../files/comAccounts.txt") as fin:
+        accounts = fin.readlines()
+    bank = accounts[0].split(",")
+    ship = accounts[1].split(",")
+    mayor = accounts[2].split(",")
+    it = accounts[3].split(",")
+    return bank, ship, mayor, it
 
 def get_products(conn):
     """
@@ -636,6 +645,7 @@ def write_order_request(QnameAtC, product, quantity, myusername, mypassword, Qfl
 
 def write_to_bank(QnameAtC, customerID, myID, my_account, customer_account, total_amount, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
     """Writes a txt file to the bank to process payment information.
+    Format: OrderID,SaleAmount,CustomerBankAcct,MyBankAcct,MyBankPassword
     """
     while True:
         flag = open(f"../files/f-{QnameAtC}")
@@ -667,6 +677,9 @@ def write_order_table(conn, item_ordered, customerID, quantity, shipping_method,
         print(err)
 
 def write_to_taxes(QnameAtC, customerID, myID, my_account, customer_account, total_amount, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+    """Write tax info to mayor.
+    Format: OrderID,SaleAmount,CustomerBankAcct,MyTaxAcct,MyTaxPassword
+    """
     while True:
         flag = open(f"../files/f-{QnameAtC}")
         try:
