@@ -372,7 +372,7 @@ def get_products(conn):
     Example return (with one row): 
     [{"Product_Name": "WiFi Router", "Current_Price": 15.00, "Inventory":12}]
     """
-    sql = "SELECT Product_Name, Photo_Link, Description, Current_Price, Inventory FROM Product_T"
+    sql = "SELECT Product_Name, Photo_Link, Description, Current_Price, Inventory FROM Product_T WHERE ProductID != 6111105"
     try:
         with conn.cursor() as cursor:
             cursor.execute(sql)
@@ -482,6 +482,9 @@ class ListMismatchError(Exception):
     pass
 
 def receive_userdata():
+    """Accept data about a user's business transaction to be stored for later visualization.
+    Format of userdata.txt: OrderID,ItemID,Quantity,SaleAmount,CustomerBankAccount,ShipMethod,ShipAddress,CompanyName,Password,NewInventory
+    """
     while True:
         flag = open(f"../files/f-userdata.txt")
         try:
@@ -573,7 +576,7 @@ def tell_server_to_confirm():
     while True:
         flag = open(f"../files/f-userdata_confirmation.txt")
         try:
-            if flag.read() != 0:
+            if flag.read() != 1:
                 pass
         except Exception as err:
             print(err)
@@ -754,7 +757,7 @@ def write_to_IT(QnameAtC, orderID, itemID, quantity, sale_amount, customer_accou
             flag.close()
             break
 
-def write_user_transaction(conn, product_name, sellerID, buyer_name, order_date, price, quantity, inventory):
+def write_user_transaction(conn, user_orderID, product_name, sellerID, sale_amount, quantity, shipping_method, inventory):
     update_user_product(conn, product_name, sellerID, inventory)
     sql_productID = "SELECT ProductID FROM User_Product_T WHERE Product_Name = %s"
     try:
@@ -764,10 +767,10 @@ def write_user_transaction(conn, product_name, sellerID, buyer_name, order_date,
     except Exception as err:
         print(err)
     productID = response_id["ProductID"]
-    sql = "INSERT INTO User_Transaction_T(ProductID, SellerID, BuyerID, Transact_Date, Price, Quantity) VALUES(%s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO User_Transaction_T(ProductID, SellerID, Sale_Amount, Quantity, UserOrderID, Shipping_Method) VALUES(%s, %s, %s, %s, %s, %s)"
     try:
         with conn.cursor() as cursor:
-            cursor.execute(sql, (productID, sellerID, buyer_name, order_date, price, quantity))
+            cursor.execute(sql, (productID, sellerID, sale_amount, quantity, user_orderID, shipping_method))
         conn.commit()
     except Exception as err:
         print(err)
