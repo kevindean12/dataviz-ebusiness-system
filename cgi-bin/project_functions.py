@@ -289,7 +289,7 @@ def display_products(template_file, names, imgsrcs, descriptions, prices, invent
 def flag_names(order_file):
     QflagName = f"f-Q-{order_file}.txt"
     QnameAtC = f"Q-{order_file}.txt"
-    QnameAtS = f"{order_file}_s.txt"
+    QnameAtS = f"Q-{order_file}_s.txt"
     AflagName = f"f-A-{order_file}.txt"
     AnameAtC = f"A-{order_file}.txt"
     AnameAtS = f"A-{order_file}_s.txt"
@@ -509,6 +509,16 @@ def remove_from_cart(conn, productID, userID):
         print("Content-type:text/html\r\n\r\n")
         print(err)
 
+def remove_unsuccessful_order(conn, orderID):
+    sql = "DELETE FROM Order_T WHERE OrderID = %s"
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (orderID))
+        conn.commit()
+    except Exception as err:
+        print("Content-type:text/html\r\n\r\n")
+        print(err)
+
 def set_cookie(conn, uid=None):
     #set cookies
     #Python cookies: http://cgi.tutorial.codepoint.net/set-the-cookie
@@ -643,7 +653,7 @@ def write_order_request(QnameAtC, product, quantity, myusername, mypassword, Qfl
             flag.close()
             break
 
-def write_to_bank(QnameAtC, customerID, myID, my_account, customer_account, total_amount, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_to_bank(QnameAtC, orderID, sale_amount, customer_account, my_account, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
     """Writes a txt file to the bank to process payment information.
     Format: OrderID,SaleAmount,CustomerBankAcct,MyBankAcct,MyBankPassword
     """
@@ -658,7 +668,7 @@ def write_to_bank(QnameAtC, customerID, myID, my_account, customer_account, tota
             break
         else:
             with open(f"../files/{QnameAtC}", "w") as fin:
-                fin.write(f"{customerID},{myID},{my_account},{customer_account},{total_amount}")
+                fin.write(f"{orderID},{sale_amount},{customer_account},{my_account},{my_password}")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
             run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
@@ -671,12 +681,14 @@ def write_order_table(conn, item_ordered, customerID, quantity, shipping_method,
     try:
         with conn.cursor() as cursor:
             cursor.execute(sql, (item_ordered, customerID, quantity, shipping_method, card))
+            orderID = cursor.lastrowid
         conn.commit()
     except Exception as err:
         print("Content-type:text/html\r\n\r\n")
         print(err)
+    return orderID
 
-def write_to_taxes(QnameAtC, customerID, myID, my_account, customer_account, total_amount, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_to_taxes(QnameAtC, orderID, sale_amount, customer_account, my_tax_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
     """Write tax info to mayor.
     Format: OrderID,SaleAmount,CustomerBankAcct,MyTaxAcct,MyTaxPassword
     """
@@ -691,14 +703,17 @@ def write_to_taxes(QnameAtC, customerID, myID, my_account, customer_account, tot
             break
         else:
             with open(f"../files/{QnameAtC}", "w") as fin:
-                fin.write(f"{customerID},{myID},{my_account},{customer_account},{total_amount}")
+                fin.write(f"{orderID},{sale_amount},{customer_account},{my_tax_acct},{my_password}")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
             run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
             flag.close()
             break
 #myID,mycustomer,mybank,customerbank,itemordered,quantity,totalamount,shipping
-def write_to_shipping(QnameAtC, customerID, myID, my_account, customer_account, items_ordered, quantities, prices, shipping_method, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_to_shipping(QnameAtC, orderID, itemID, quantity, shipping_method, shipping_address, my_ship_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+    """Write shipping info.
+    Format: OrderID,ItemID,Quantity,ShipMethod,ShipAddr,MyShipAcct,MyShipPassword
+    """
     while True:
         flag = open(f"../files/f-{QnameAtC}")
         try:
@@ -710,15 +725,17 @@ def write_to_shipping(QnameAtC, customerID, myID, my_account, customer_account, 
             break
         else:
             with open(f"../files/{QnameAtC}", "w") as fin:
-                for i in range(len(items_ordered)):
-                    fin.write(f"{customerID},{myID},{my_account},{customer_account},{items_ordered[i]},{quantities[i]},{prices[i]*quantities[i]},{shipping_method}\n")
+                fin.write(f"{orderID},{itemID},{quantity},{shipping_method},{shipping_address},{my_ship_acct},{my_password}")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
             run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
             flag.close()
             break
 
-def write_to_IT(QnameAtC, customerID, myID, order_date, items_ordered, quantities, prices, inventories, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_to_IT(QnameAtC, orderID, itemID, quantity, sale_amount, customer_account, shipping_method, shipping_address, my_it_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+    """Write order to (the other) IT data collection company.
+    Format: OrderID,ItemID,Quantity,SaleAmount,CustomerBankAcct,ShipMethod,ShipAddr,MyItAcct,MyItPassword
+    """
     while True:
         flag = open(f"../files/f-{QnameAtC}")
         try:
@@ -730,8 +747,7 @@ def write_to_IT(QnameAtC, customerID, myID, order_date, items_ordered, quantitie
             break
         else:
             with open(f"../files/{QnameAtC}", "w") as fin:
-                for i in range(len(items_ordered)):
-                    fin.write(f"{customerID},{myID},{order_date},{items_ordered[i]},{quantities[i]},{prices[i]},{inventories[i]}\n")
+                fin.write(f"{orderID},{itemID},{quantity},{sale_amount},{customer_account},{shipping_method},{shipping_address},{my_it_acct},{my_password}\n")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
             run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
