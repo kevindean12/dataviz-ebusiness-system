@@ -55,17 +55,29 @@ def main():
     <title>Habitat</title>
 </head>
 <body>
-    <main id="showcase">
-        <a href="index.html" class="btn-no-padding">Home</a>
-        <div class="bg-image"></div>
+        <a href="../index.html" class="btn-no-padding">Home</a>
         <h1>Welcome to Habitat!</h1>
+        <h2>Please save this page for your records</h2>
         <p>To connect with us, please use our socket-based API by sending new data to be stored and processed to port 11020.</p>
-        <p>Please expect your confirmation response back on port 11025</p>
-        <p>Send new data in a file called userdata.txt with the following format: </p>
-        <p>yourUserName,yourCustomerUserName,YYYY-MM-DD,itemOrdered,quantity,price,remainingInventoryofItem</p>
+        <p>Please expect your confirmation response back on port 11021</p>
+        <p>Send new data in a comma-separated file called userdata.txt with the following format: </p>
+        <p>orderID,productName,quantity,saleAmount,customerBankAccount,shipMethod,shipAddress,yourUsername,yourPassword,inventory</p>
+        <p>You may include more than one transaction in a single file if you wish. Please separate transactions with a new line (one transaction containing one product per line).</p>
+        <p>Fields:
+            <ul>
+                <li>orderID: the ID# for the order on your end</li>
+                <li>productName: the name of the item being sold (We'll create our own internal ID for it)</li>
+                <li>quantity: how many of the item are included in this transaction</li>
+                <li>saleAmount: the total amount of revenue from the sale of this item</li>
+                <li>customerBankAccount: the account of your customer, per project specifications</li>
+                <li>shipMethod: the method by which you shipped this product to your customer (if it was a digital transaction with no shipping, you might call this Digital)</li>
+                <li>shipAddress: the address to which the item was shipped</li>
+                <li>yourUsername: the username you provided when you registered for an account with Habitat</li>
+                <li>yourPassword: your password with Habitat</li>
+                <li>inventory: the amount of inventory of this product you have remaining</li>
+            </ul>
+        </p>
         
-    </main>
-    
      <!-- Footer -->
      <footer id="main-footer" class="grid">
             <div>Habitat Data Storage and Visualization</div>
