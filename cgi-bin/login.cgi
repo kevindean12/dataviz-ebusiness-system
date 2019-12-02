@@ -111,82 +111,7 @@ def main():
 
     conn.close()
 
-def check_credentials(conn, table, uname, pword):
-    ph = PasswordHasher()
-    if table == "Business_T":
-        sql = "SELECT Password FROM Business_T WHERE Business_Name = %s"
-    else:
-        sql = "SELECT Password FROM Individual_T WHERE Username = %s"
-    try:
-        with conn.cursor() as cursor:
-            cursor.execute(sql, (uname))
-            answer = cursor.fetchone()
-    except Exception as err:
-        print("Content-type:text/html\r\n\r\n") #TODO testing only
-        print(err)
-    try:
-        encrypted_pword = answer["Password"]
-    except Exception as err:
-        return False
-    try:
-        password_matches = ph.verify(encrypted_pword, pword)
-    except Exception as mismatcherr: #TODO be more specific, it's VerifyMismatchError
-        password_matches = False
-    if not password_matches:
-        return password_matches
-    else:
-        rehash = ph.check_needs_rehash(encrypted_pword)
-        if rehash:
-            rehash_pwd(conn, pword, uname, table)
-    return password_matches
 
-def rehash_pwd(conn, pword, uname, table):
-    new_pwd = pass_hash(pword)
-    if table == "Business_T":
-        sql = "UPDATE Business_T SET Password = %s WHERE Business_Name = %s"
-    else:
-        sql = "UPDATE Individual_T SET Password = %s WHERE Username = %s"
-    try:
-        with conn.cursor() as cursor:
-            cursor.execute(sql, (new_pwd, uname))
-        conn.commit()
-    except Exception as err:
-        print("Content-type:text/html\r\n\r\n") #TODO testing only
-        print(err)
-
-#get userID from DB
-def getUID(conn, tablename, user):
-    if tablename == "Business_T":
-        col = "Business_Name"
-        id_col = "BusinessID"
-        sql = "SELECT BusinessID FROM Business_T WHERE Business_Name = %s"
-    else:
-        col = "Username"
-        id_col = "UserID"
-        sql = "SELECT UserID FROM Individual_T WHERE Username = %s"
-    try:
-        with conn.cursor() as cursor:
-            cursor.execute(sql, (user))
-            response = cursor.fetchone()
-    except Exception as err:
-        print("Content-type:text/html\r\n\r\n") #TODO testing only
-        print(err)
-    uid = response[f"{id_col}"]
-    return uid
-
-def login_failure():
-    print("<html lang=\"en\">")
-    print("<head>")
-    print("<meta charset=\"UTF-8\">")
-    print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
-    print("<meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">")
-    print("<link rel=\"stylesheet\" href=\"../style.css\">")
-    print("<title>Habitat</title>")
-    print("</head>")
-    print("<h1>Login Failed</h1>")
-    print("<h3>Please try again.</h3>")
-    print("<h3 class=\"card-title\"><a href=\"../login.html\" class=\"btn\">Login</a></h3>")
-    print("</html>")
 
 def visualize_data(chartjson, chartjson2):
     returnpage = listify_file("../dataviz_x.html")
@@ -202,18 +127,6 @@ def visualize_data(chartjson, chartjson2):
     returnpagestr = ""
     returnpagestr = returnpagestr.join(returnpage)
     return returnpagestr
-
-def pass_hash(pwd):
-    ph = PasswordHasher()
-    pwd_hashed = ph.hash(pwd)
-    try:
-        #ph.check_needs_rehash -- use this every time user logs in
-        ph.verify(pwd_hashed, pwd)
-        return pwd_hashed
-    except Exception as err: #VerifyMismatchError
-        print(err)
-    # except InvalidHash as invalid_err:
-    #     print(invalid_err)
 
 def display_b2bform(file):
     with open(f"../{file}") as fin:

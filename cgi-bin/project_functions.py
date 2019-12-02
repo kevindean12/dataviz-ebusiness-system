@@ -4,6 +4,7 @@ import pymysql as db
 import os
 from subprocess import run
 import secrets
+from argon2 import PasswordHasher
 
 #TODO update this dict with real business' port numbers
 #format: port_num : filename(no extension), business' username, my username w/ that business, my password for that business
@@ -418,6 +419,9 @@ def get_user(conn, userID):
     if int(userID)//1000000 == 1:
         col = "Business_Name"
         sql = "SELECT Business_Name FROM Business_T WHERE BusinessID = %s"
+    elif int(userID) == 9999999:
+        username = "Guest"
+        return username
     else:
         col = "Username"
         sql = "SELECT Username FROM Individual_T WHERE UserID = %s"
@@ -634,6 +638,31 @@ def update_user_bank(conn, userID, bank):
         print("Content-type:text/html\r\n\r\n")
         print(err)
 
+def write_cart(conn, userID, product_name, quantity):
+    productID = get_productID(conn, product_name)
+    #first check if user-item already in Shopping_Cart_T, if so just increment quantity
+    sql_check = "SELECT UserID, ProductID, Quantity FROM Shopping_Cart_T WHERE UserID = %s AND ProductID = %s"
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql_check, (userID, productID))
+        response = cursor.fetchone()
+    except Exception as err:
+        print("Content-type:text/html\r\n\r\n")
+        print(err)
+    if response == None:
+        sql = "INSERT INTO Shopping_Cart_T VALUES (%s, %s, %s)"
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(sql, (userID, productID, quantity))
+            conn.commit()
+        except Exception as err:
+            print("Content-type:text/html\r\n\r\n")
+            print(err)
+    else:
+        additional_quantity = int(response["Quantity"])
+        total_quantity = additional_quantity + int(quantity)
+        update_quantity(conn, total_quantity, userID, productID)
+
 def write_order_request(QnameAtC, product, quantity, myusername, mypassword, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
     """Writes a txt file for the B2B order and update flag file to indicate
     Client.java may read it and process the order. Calls Client program.
@@ -800,3 +829,94 @@ def update_user_product(conn, product_name, businessID, inventory):
             conn.commit()
         except Exception as err:
             print(err)
+
+#login functions
+
+def check_credentials(conn, table, uname, pword):
+    ph = PasswordHasher()
+    if table == "Business_T":
+        sql = "SELECT Password FROM Business_T WHERE Business_Name = %s"
+    else:
+        sql = "SELECT Password FROM Individual_T WHERE Username = %s"
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (uname))
+            answer = cursor.fetchone()
+    except Exception as err:
+        print("Content-type:text/html\r\n\r\n") #TODO testing only
+        print(err)
+    try:
+        encrypted_pword = answer["Password"]
+    except Exception as err:
+        return False
+    try:
+        password_matches = ph.verify(encrypted_pword, pword)
+    except Exception as mismatcherr: #TODO be more specific, it's VerifyMismatchError
+        password_matches = False
+    if not password_matches:
+        return password_matches
+    else:
+        rehash = ph.check_needs_rehash(encrypted_pword)
+        if rehash:
+            rehash_pwd(conn, pword, uname, table)
+    return password_matches
+
+def rehash_pwd(conn, pword, uname, table):
+    new_pwd = pass_hash(pword)
+    if table == "Business_T":
+        sql = "UPDATE Business_T SET Password = %s WHERE Business_Name = %s"
+    else:
+        sql = "UPDATE Individual_T SET Password = %s WHERE Username = %s"
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (new_pwd, uname))
+        conn.commit()
+    except Exception as err:
+        print("Content-type:text/html\r\n\r\n") #TODO testing only
+        print(err)
+
+#get userID from DB
+def getUID(conn, tablename, user):
+    if tablename == "Business_T":
+        col = "Business_Name"
+        id_col = "BusinessID"
+        sql = "SELECT BusinessID FROM Business_T WHERE Business_Name = %s"
+    else:
+        col = "Username"
+        id_col = "UserID"
+        sql = "SELECT UserID FROM Individual_T WHERE Username = %s"
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (user))
+            response = cursor.fetchone()
+    except Exception as err:
+        print("Content-type:text/html\r\n\r\n") #TODO testing only
+        print(err)
+    uid = response[f"{id_col}"]
+    return uid
+
+def login_failure():
+    print("<html lang=\"en\">")
+    print("<head>")
+    print("<meta charset=\"UTF-8\">")
+    print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
+    print("<meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">")
+    print("<link rel=\"stylesheet\" href=\"../style.css\">")
+    print("<title>Habitat</title>")
+    print("</head>")
+    print("<h1>Login Failed</h1>")
+    print("<h3>Please try again.</h3>")
+    print("<h3 class=\"card-title\"><a href=\"../login.html\" class=\"btn\">Login</a></h3>")
+    print("</html>")
+
+def pass_hash(pwd):
+    ph = PasswordHasher()
+    pwd_hashed = ph.hash(pwd)
+    try:
+        #ph.check_needs_rehash -- use this every time user logs in
+        ph.verify(pwd_hashed, pwd)
+        return pwd_hashed
+    except Exception as err: #VerifyMismatchError
+        print(err)
+    # except InvalidHash as invalid_err:
+    #     print(invalid_err)
