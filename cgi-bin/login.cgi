@@ -28,8 +28,8 @@ def main():
     if password_matches and table=="Business_T":
         uid = getUID(conn,table,uname)
         set_cookie(conn, uid)
+ 
         #data: list of dicts with keys Product_Name, Transact_Date, Price, Quantity
-        
         try:
             data = get_business_data(conn, uid)
         except Exception as err:
@@ -38,35 +38,31 @@ def main():
         if data != ():
             df = pd.DataFrame({
                 "Product" : [d["Product_Name"] for d in data],
-                "Date" : [str(d["Transact_Date"]) for d in data],
-                "Price": [float(d["Price"]) for d in data],
+                "Shipping_Method" : [str(d["Shipping_Method"]) for d in data],
+                "Sale_Amount": [float(d["Sale_Amount"]) for d in data],
                 "Quantity": [int(d["Quantity"]) for d in data]
                 })
-            sales_date_df = df
-            sales_date_df["Amount"] = sales_date_df.Price.mul(sales_date_df.Quantity)
-            sales_date_df = sales_date_df.groupby(["Date"]).sum()
-            sales_date_df.index = pd.to_datetime(sales_date_df.index)
-            sales_date_df = sales_date_df.reset_index()
-            chart = alt.Chart(sales_date_df).mark_line(color="#d786a4", size=3, point=True).encode(
-                x=alt.X("Date", axis=alt.Axis(title="Date of Transaction", titleFontSize=20, titleColor="#ccc", grid=True, gridColor="#ccc", labelColor="#ccc")),
-                y=alt.Y("Amount", axis=alt.Axis(title="Sales on Date", format="$", titleFontSize=20, titleColor="#ccc", grid=True, gridColor="#ccc", labelColor="#ccc")), 
-                tooltip=["Date", "Amount", "Quantity"]).configure(background="#181818"
+            sales_by_product = df.groupby(["Product"]).Sale_Amount.sum().reset_index()
+            chart = alt.Chart(sales_by_product).mark_bar(color="#d786a4").encode(
+                x=alt.X("Product", axis=alt.Axis(title="Product", titleFontSize=20, titleColor="#ccc", grid=True, gridColor="#ccc", labelColor="#ccc")),
+                y=alt.Y("Sale_Amount", axis=alt.Axis(title="Total Amount Sold ($)", format="$", titleFontSize=20, titleColor="#ccc", grid=True, gridColor="#ccc", labelColor="#ccc")), 
+                tooltip=["Product", "Sale_Amount"]).configure(background="#181818"
                 ).properties(
                     width=500,
                     height=500,
                     autosize=alt.AutoSizeParams(contains="padding", type="fit")
                 ).interactive().to_json()
-            product_sales_df = df
-            product_sales_df["Amount"] = product_sales_df.Price.mul(product_sales_df.Quantity)
-            product_sales_df = product_sales_df.groupby(["Product"]).sum()
-            product_sales_df = product_sales_df.reset_index()
-            chart2 = alt.Chart(product_sales_df).mark_bar(color="#d786a4").encode(
-                x=alt.X("Product", axis=alt.Axis(title="Product", titleFontSize=20, titleColor="#ccc", labelColor="#ccc")), 
-                y=alt.Y("Quantity", axis=alt.Axis(title="Number Sold", titleFontSize=20, titleColor="#ccc", labelColor="#ccc")),
+            shipping_by_product = df.groupby(["Shipping_Method", "Product"]).sum().reset_index()
+            chart2 = alt.Chart(shipping_by_product).mark_bar().encode(
+                x=alt.X("Quantity", axis=alt.Axis(title="Quantity Sold", titleFontSize=20, titleColor="#ccc", gridColor="#ccc", labelColor="#ccc")),
+                y=alt.Y("Shipping_Method", axis=alt.Axis(title="Shipping Method", titleFontSize=20, titleColor="#ccc", gridColor="#ccc", labelColor="#ccc")),
+                color="Product",
+                tooltip=["Product", "Quantity"]).configure(background="#181818"
                 ).properties(
                     width=500,
                     height=500,
-                    autosize=alt.AutoSizeParams(contains="padding", type="fit")).to_json()
+                    autosize=alt.AutoSizeParams(contains="padding", type="fit")
+                ).configure_legend(strokeColor="gray", fillColor="#ccc").to_json()
             print("Content-type:text/html\r\n\r\n")
             print(visualize_data(chart, chart2))
         else:

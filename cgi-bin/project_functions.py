@@ -308,7 +308,7 @@ def get_businessID(conn, business_name):
         print(err)
 
 def get_business_data(conn, businessID):
-    sql = "SELECT DISTINCT Product_Name, Transact_Date, Price, Quantity FROM User_Transaction_T INNER JOIN User_Product_T ON User_Transaction_T.SellerID = User_Product_T.BusinessID WHERE BusinessID = %s"
+    sql = "SELECT DISTINCT Product_Name, Sale_Amount, Quantity, Shipping_Method FROM User_Transaction_T INNER JOIN User_Product_T ON User_Transaction_T.ProductID = User_Product_T.ProductID WHERE User_Transaction_T.SellerID = %s"
     try:
         with conn.cursor() as cursor:
             cursor.execute(sql, (businessID))
