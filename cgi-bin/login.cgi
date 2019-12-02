@@ -28,14 +28,19 @@ def main():
     if password_matches and table=="Business_T":
         uid = getUID(conn,table,uname)
         set_cookie(conn, uid)
- 
-        #data: list of dicts with keys Product_Name, Transact_Date, Price, Quantity
-        try:
-            data = get_business_data(conn, uid)
-        except Exception as err:
-            print("Content-type:text/html\r\n\r\n")
-            print(err)
-        if data != ():
+        if int(uid) == 1111100:
+            #admin user who sees overview of all data
+            try:
+                data = get_all_data(conn)
+            except Exception as err:
+                print("Content-type:text/html\r\n\r\n")
+                print(err)
+            try:
+                transaction_data = get_transaction_data(conn)
+            except Exception as err:
+                print("Content-type:text/html\r\n\r\n")
+                print(err)
+
             df = pd.DataFrame({
                 "Product" : [d["Product_Name"] for d in data],
                 "Shipping_Method" : [str(d["Shipping_Method"]) for d in data],
@@ -59,27 +64,79 @@ def main():
                 color="Product",
                 tooltip=["Product", "Quantity"]).configure(background="#181818"
                 ).properties(
-                    width=500,
+                    width=700,
                     height=500,
                     autosize=alt.AutoSizeParams(contains="padding", type="fit")
                 ).configure_legend(strokeColor="gray", fillColor="#ccc").to_json()
+            transaction_df = pd.DataFrame({
+                "SellerID" : [str(d["SellerID"]) for d in transaction_data],
+                "Sale_Amount": [float(d["Sale_Amount"]) for d in transaction_data]
+            })
+            sales_by_user = transaction_df.groupby(["SellerID"]).sum().reset_index()
+            chart3 = alt.Chart(sales_by_user).mark_bar().encode(
+                x=alt.X("sum(Sale_Amount)", axis=alt.Axis(title="Total Sales ($)", titleFontSize=20, titleColor="#ccc", gridColor="#ccc", labelColor="#ccc")),
+                y=alt.Y("SellerID", axis=alt.Axis(title="User (ID)", titleFontSize=20, titleColor="#ccc", gridColor="#ccc", labelColor="#ccc")),
+                color="SellerID",
+                tooltip=["SellerID", "Sale_Amount"]).configure(background="#181818"
+                ).properties(
+                    width=700,
+                    height=500,
+                    autosize=alt.AutoSizeParams(contains="padding", type="fit")
+                ).configure_legend(strokeColor="gray", fillColor="#ccc").to_json()
+            
             print("Content-type:text/html\r\n\r\n")
-            print(visualize_data(chart, chart2))
+            print(visualize_data(chart, chart2, chart3))
         else:
-            print("Content-type:text/html\r\n\r\n")
-            print("<html lang=\"en\">")
-            print("<head>")
-            print("<meta charset=\"UTF-8\">")
-            print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
-            print("<meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">")
-            print("<link rel=\"stylesheet\" href=\"../style.css\">")
-            print("<title>Habitat</title>")
-            print("</head>")
-            print("<h2>You don't have any sales yet!</h2>")
-            print("<h3 class=\"card-title\"><a href=\"products.cgi\" class=\"btn\">Products</a></h3>")
-            print("<h3 class=\"card-title\"><a href=\"../index.html\" class=\"btn\">Home</a></h3>")
-            print("</html>")
-        
+            #data: list of dicts with keys Product_Name, Transact_Date, Price, Quantity
+            try:
+                data = get_business_data(conn, uid)
+            except Exception as err:
+                print("Content-type:text/html\r\n\r\n")
+                print(err)
+            if data != ():
+                df = pd.DataFrame({
+                    "Product" : [d["Product_Name"] for d in data],
+                    "Shipping_Method" : [str(d["Shipping_Method"]) for d in data],
+                    "Sale_Amount": [float(d["Sale_Amount"]) for d in data],
+                    "Quantity": [int(d["Quantity"]) for d in data]
+                    })
+                sales_by_product = df.groupby(["Product"]).Sale_Amount.sum().reset_index()
+                chart = alt.Chart(sales_by_product).mark_bar(color="#d786a4").encode(
+                    x=alt.X("Product", axis=alt.Axis(title="Product", titleFontSize=20, titleColor="#ccc", grid=True, gridColor="#ccc", labelColor="#ccc")),
+                    y=alt.Y("Sale_Amount", axis=alt.Axis(title="Total Amount Sold ($)", format="$", titleFontSize=20, titleColor="#ccc", grid=True, gridColor="#ccc", labelColor="#ccc")), 
+                    tooltip=["Product", "Sale_Amount"]).configure(background="#181818"
+                    ).properties(
+                        width=500,
+                        height=500,
+                        autosize=alt.AutoSizeParams(contains="padding", type="fit")
+                    ).interactive().to_json()
+                shipping_by_product = df.groupby(["Shipping_Method", "Product"]).sum().reset_index()
+                chart2 = alt.Chart(shipping_by_product).mark_bar().encode(
+                    x=alt.X("Quantity", axis=alt.Axis(title="Quantity Sold", titleFontSize=20, titleColor="#ccc", gridColor="#ccc", labelColor="#ccc")),
+                    y=alt.Y("Shipping_Method", axis=alt.Axis(title="Shipping Method", titleFontSize=20, titleColor="#ccc", gridColor="#ccc", labelColor="#ccc")),
+                    color="Product",
+                    tooltip=["Product", "Quantity"]).configure(background="#181818"
+                    ).properties(
+                        width=700,
+                        height=500,
+                        autosize=alt.AutoSizeParams(contains="padding", type="fit")
+                    ).configure_legend(strokeColor="gray", fillColor="#ccc").to_json()
+                print("Content-type:text/html\r\n\r\n")
+                print(visualize_data(chart, chart2))
+            else:
+                print("Content-type:text/html\r\n\r\n")
+                print("<html lang=\"en\">")
+                print("<head>")
+                print("<meta charset=\"UTF-8\">")
+                print("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">")
+                print("<meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">")
+                print("<link rel=\"stylesheet\" href=\"../style.css\">")
+                print("<title>Habitat</title>")
+                print("</head>")
+                print("<h2>You don't have any sales yet!</h2>")
+                print("<h3 class=\"card-title\"><a href=\"products.cgi\" class=\"btn\">Products</a></h3>")
+                print("<h3 class=\"card-title\"><a href=\"../index.html\" class=\"btn\">Home</a></h3>")
+                print("</html>")
 
     elif password_matches and table=="Individual_T":
         uid = getUID(conn,table,uname)
@@ -109,7 +166,7 @@ def main():
 
 
 
-def visualize_data(chartjson, chartjson2):
+def visualize_data(chartjson, chartjson2, chartjson3=None):
     returnpage = listify_file("../dataviz_x.html")
     for line in returnpage:
         if "putdataviz" in line:
@@ -120,6 +177,10 @@ def visualize_data(chartjson, chartjson2):
             returnpage.insert(i+2,
                 f"<script type=\"text/javascript\"> var mychart2 = {chartjson2}; vegaEmbed(\'#vis2\', mychart2); </script>" 
             )
+            if chartjson3 != None:
+                returnpage.insert(i+3, 
+                    f"<script type=\"text/javascript\"> var mychart3 = {chartjson3}; vegaEmbed(\'#vis3\', mychart3); </script>" 
+                )
     returnpagestr = ""
     returnpagestr = returnpagestr.join(returnpage)
     return returnpagestr

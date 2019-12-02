@@ -307,6 +307,28 @@ def get_businessID(conn, business_name):
     except Exception as err:
         print(err)
 
+def get_all_data(conn):
+    sql = "SELECT DISTINCT Product_Name, Sale_Amount, Quantity, Shipping_Method FROM User_Transaction_T INNER JOIN User_Product_T ON User_Transaction_T.ProductID = User_Product_T.ProductID"
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql)
+            response = cursor.fetchall()
+            return response
+    except Exception as err:
+        print("Content-type:text/html\r\n\r\n") 
+        print(err)
+
+def get_transaction_data(conn):
+    sql = "SELECT SellerID, Sale_Amount from User_Transaction_T"
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql)
+            response = cursor.fetchall()
+            return response
+    except Exception as err:
+        print("Content-type:text/html\r\n\r\n") 
+        print(err)
+
 def get_business_data(conn, businessID):
     sql = "SELECT DISTINCT Product_Name, Sale_Amount, Quantity, Shipping_Method FROM User_Transaction_T INNER JOIN User_Product_T ON User_Transaction_T.ProductID = User_Product_T.ProductID WHERE User_Transaction_T.SellerID = %s"
     try:
