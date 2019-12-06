@@ -460,10 +460,15 @@ def get_user_id_from_session(conn, sessionID):
         with conn.cursor() as cursor:
             cursor.execute(sql, (sessionID))
             response = cursor.fetchone()
+            if response == None:
+                set_guest_session(conn, sessionID)
+                return "9999999"
+            else:
+                return response["UserID"]
     except Exception as err:
         print("Content-type:text/html\r\n\r\n") #TODO testing only
         print(err)
-    return response["UserID"]
+    
 
 def get_user_info(conn, userID):
     if int(userID)//1000000 != 2:
@@ -586,7 +591,7 @@ def session_update(conn, uid, sessionID):
         print(err)
 
 def set_guest_session(conn, sessionID):
-    sql = "INSERT INTO Session_T(SessionID, UserID) VALUES(%s, 9999999) ON DUPLICATE KEY UPDATE SessionID = %s"
+    sql = "INSERT INTO Session_T(SessionID, UserID) VALUES(%s, '9999999') ON DUPLICATE KEY UPDATE SessionID = %s"
     try:
         with conn.cursor() as cursor:
             cursor.execute(sql, (sessionID, sessionID))
