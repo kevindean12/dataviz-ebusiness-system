@@ -10,10 +10,6 @@ from argon2 import PasswordHasher
 #format: port_num : filename(no extension), business' username, my username w/ that business, my password for that business
 businesses = { 
     "11020" : ("order", "Habitat", "deank", "habitat"),
-    "bank" : ("bank", "Rondout", "deank", "12345","1234098767564534"),#(..., myaccount)
-    "mayor": ("mayor", "CityHall", "deank", "12345"),
-    "shipping": ("ship", "FedEx", "deank", "12345"),
-    "IT": ("it", "Box", "deank", "12345"),
     }
 
 def create_receipt(conn, sessionID):
@@ -369,7 +365,8 @@ def get_confirmation(answer_file):
             break
         else:
             with open(f"../files/{answer_file}") as data:
-                answer = data.read()
+                answer = data.readline()
+                answer = answer.replace("\n","")
                 #data == 0 means good, 1 means no account, 2 means not enough money
                 #TODO testing only
                 # with open("../files/test_confirmation.txt", "w") as test_confirm:
@@ -685,7 +682,7 @@ def write_cart(conn, userID, product_name, quantity):
         total_quantity = additional_quantity + int(quantity)
         update_quantity(conn, total_quantity, userID, productID)
 
-def write_order_request(QnameAtC, product, quantity, myusername, mypassword, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_order_request(QnameAtC, product, quantity, myusername, mypassword, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, sendPort, receivePort):
     """Writes a txt file for the B2B order and update flag file to indicate
     Client.java may read it and process the order. Calls Client program.
     """
@@ -703,11 +700,11 @@ def write_order_request(QnameAtC, product, quantity, myusername, mypassword, Qfl
                 fin.write(f"{myusername},{mypassword},{product},{quantity}")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
+            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
 
-def write_to_bank(QnameAtC, orderID, sale_amount, customer_account, my_account, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_to_bank(QnameAtC, orderID, sale_amount, customer_account, my_account, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, sendPort, receivePort):
     """Writes a txt file to the bank to process payment information.
     Format: OrderID,SaleAmount,CustomerBankAcct,MyBankAcct,MyBankPassword
     """
@@ -725,7 +722,7 @@ def write_to_bank(QnameAtC, orderID, sale_amount, customer_account, my_account, 
                 fin.write(f"{orderID},{sale_amount},{customer_account},{my_account},{my_password}")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
+            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
     
@@ -742,7 +739,7 @@ def write_order_table(conn, item_ordered, customerID, quantity, shipping_method,
         print(err)
     return orderID
 
-def write_to_taxes(QnameAtC, orderID, sale_amount, customer_account, my_tax_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_to_taxes(QnameAtC, orderID, sale_amount, customer_account, my_tax_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, sendPort, receivePort):
     """Write tax info to mayor.
     Format: OrderID,SaleAmount,CustomerBankAcct,MyTaxAcct,MyTaxPassword
     """
@@ -760,11 +757,11 @@ def write_to_taxes(QnameAtC, orderID, sale_amount, customer_account, my_tax_acct
                 fin.write(f"{orderID},{sale_amount},{customer_account},{my_tax_acct},{my_password}")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
+            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
 #myID,mycustomer,mybank,customerbank,itemordered,quantity,totalamount,shipping
-def write_to_shipping(QnameAtC, orderID, itemID, quantity, shipping_method, shipping_address, my_ship_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_to_shipping(QnameAtC, orderID, itemID, quantity, shipping_method, shipping_address, my_ship_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, sendPort, receivePort):
     """Write shipping info.
     Format: OrderID,ItemID,Quantity,ShipMethod,ShipAddr,MyShipAcct,MyShipPassword
     """
@@ -782,11 +779,11 @@ def write_to_shipping(QnameAtC, orderID, itemID, quantity, shipping_method, ship
                 fin.write(f"{orderID},{itemID},{quantity},{shipping_method},{shipping_address},{my_ship_acct},{my_password}")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
+            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
 
-def write_to_IT(QnameAtC, orderID, itemID, quantity, sale_amount, customer_account, shipping_method, shipping_address, my_it_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS):
+def write_to_IT(QnameAtC, orderID, itemID, quantity, sale_amount, customer_account, shipping_method, shipping_address, my_it_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, sendPort, receivePort):
     """Write order to (the other) IT data collection company.
     Format: OrderID,ItemID,Quantity,SaleAmount,CustomerBankAcct,ShipMethod,ShipAddr,MyItAcct,MyItPassword
     """
@@ -804,7 +801,7 @@ def write_to_IT(QnameAtC, orderID, itemID, quantity, sale_amount, customer_accou
                 fin.write(f"{orderID},{itemID},{quantity},{sale_amount},{customer_account},{shipping_method},{shipping_address},{my_it_acct},{my_password}\n")
             with open(f"../files/f-{QnameAtC}", "w") as flag:
                 flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}"])
+            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"../files/{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"../files/{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
 
@@ -858,8 +855,10 @@ def check_credentials(conn, table, uname, pword):
     ph = PasswordHasher()
     if table == "Business_T":
         sql = "SELECT Password FROM Business_T WHERE Business_Name = %s"
-    else:
+    elif table == "Individual_T":
         sql = "SELECT Password FROM Individual_T WHERE Username = %s"
+    else:
+        sql = "SELECT Password FROM Staff_T WHERE Username = %s"
     try:
         with conn.cursor() as cursor:
             cursor.execute(sql, (uname))

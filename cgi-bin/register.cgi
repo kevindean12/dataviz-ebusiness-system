@@ -62,6 +62,7 @@ def main():
         <p>Please expect your confirmation response back on port 11021</p>
         <p>Send new data in a comma-separated file called userdata.txt with the following format: </p>
         <p>orderID,productName,quantity,saleAmount,customerBankAccount,shipMethod,shipAddress,yourUsername,yourPassword,inventory</p>
+        <p>You should expect to receive a confirmation reply in a file called userdata_confirmation.txt.</p>
         <p>You may include more than one transaction in a single file if you wish. Please separate transactions with a new line (one transaction containing one product per line).</p>
         <p>Fields:
             <ul>

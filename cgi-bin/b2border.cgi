@@ -11,6 +11,7 @@ def main():
     form = cgi.FieldStorage()
     team = form.getfirst("teamID")
     port_num = "11" + str(team) + "0"
+    return_port = "11" + str(team) + "1"
     product = form.getfirst("productorder")
     quantity = form.getfirst("quantity")
 
@@ -22,7 +23,7 @@ def main():
     #filenames for Client.java command line args:
     QflagName, QnameAtC, QnameAtS, AflagName, AnameAtC, AnameAtS = flag_names(order_file)
 
-    write_order_request(QnameAtC, product, quantity, uname, pwrd, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS)
+    write_order_request(QnameAtC, product, quantity, uname, pwrd, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, port_num, return_port)
     #flag file is named f-{order_file}_confirmation.txt, follow this convention everywhere
     get_confirmation(AnameAtC)
 

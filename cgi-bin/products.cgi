@@ -22,7 +22,10 @@ def main():
         prices.append(d["Current_Price"])
         inventories.append(d["Inventory"])
     template = "../products_x.html"
-    cookie = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
+    try: 
+        cookie = cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
+    except Exception as err:
+        sessionID = set_cookie(conn)
     try:
         sessionID = cookie["sessionID"].value
     except Exception as err:
