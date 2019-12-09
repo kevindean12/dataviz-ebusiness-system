@@ -50,25 +50,27 @@ def main():
         "MyAccount" : bank[0],
         "MyPassword" : bank[1],
         "SendPort" : bank[2],
-        "ReceivePort": bank[3]
+        "ReceivePort": bank[3],
+        "FilePath" : bank[4]
     }
 
     mayor_info = {
         "MyAccount" : mayor[0],
         "MyPassword" : mayor[1],
         "SendPort" : mayor[2],
-        "ReceivePort": mayor[3]
+        "ReceivePort": mayor[3],
+        "FilePath" : mayor[4]
     }
 
     QflagName_b, QnameAtC_b, QnameAtS_b, AflagName_b, AnameAtC_b, AnameAtS_b = flag_names("bank")
     QflagName_t, QnameAtC_t, QnameAtS_t, AflagName_t, AnameAtC_t, AnameAtS_t = flag_names("mayor")
 
-    write_to_bank(QnameAtC_b, orderID, cost, card, bank_info["MyAccount"], bank_info["MyPassword"], QflagName_b, QnameAtS_b, AflagName_b, AnameAtC_b, AnameAtS_b, bank_info["SendPort"], bank_info["ReceivePort"])
+    write_to_bank(QnameAtC_b, orderID, cost, card, bank_info["MyAccount"], bank_info["MyPassword"], QflagName_b, QnameAtS_b, AflagName_b, AnameAtC_b, AnameAtS_b, bank_info["SendPort"], bank_info["ReceivePort"], bank_info["FilePath"])
     bank_confirmation = get_confirmation(AnameAtC_b)
     if int(bank_confirmation) != 0:
         print("Something's wrong", "bank confirmation says", bank_confirmation)
     
-    write_to_taxes(QnameAtC_t, orderID, cost, card, mayor_info["MyAccount"], mayor_info["MyPassword"], QflagName_t, QnameAtS_t, AflagName_t, AnameAtC_t, AnameAtS_t, mayor_info["SendPort"], mayor_info["ReceivePort"])
+    write_to_taxes(QnameAtC_t, orderID, cost, card, mayor_info["MyAccount"], mayor_info["MyPassword"], QflagName_t, QnameAtS_t, AflagName_t, AnameAtC_t, AnameAtS_t, mayor_info["SendPort"], mayor_info["ReceivePort"], mayor_info["FilePath"])
     tax_confirmation = get_confirmation(AnameAtC_t)
     if int(tax_confirmation) != 0:
         print("Something's wrong", "tax confirmation says", tax_confirmation)

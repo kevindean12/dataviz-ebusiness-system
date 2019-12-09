@@ -26,28 +26,32 @@ def main():
         "MyAccount" : bank[0],
         "MyPassword" : bank[1],
         "SendPort" : bank[2],
-        "ReceivePort": bank[3]
+        "ReceivePort": bank[3],
+        "FilePath" : bank[4]
     }
 
     ship_info = {
         "MyAccount" : ship[0],
         "MyPassword" : ship[1],
         "SendPort" : ship[2],
-        "ReceivePort": ship[3]
+        "ReceivePort": ship[3],
+        "FilePath" : ship[4]
     }
 
     mayor_info = {
         "MyAccount" : mayor[0],
         "MyPassword" : mayor[1],
         "SendPort" : mayor[2],
-        "ReceivePort": mayor[3]
+        "ReceivePort": mayor[3],
+        "FilePath" : mayor[4]
     }
 
     it_info = {
         "MyAccount" : it[0],
         "MyPassword" : it[1],
         "SendPort" : it[2],
-        "ReceivePort": it[3]
+        "ReceivePort": it[3],
+        "FilePath" : it[4]
     }
 
     #[(name,photo,price,quantity, inventory)]
@@ -89,7 +93,7 @@ def main():
     #myID,mycustomer,mybank,customerbank,itemordered,quantity,totalamount,shipping
     confirmations = []
     for order in all_orders:
-        write_to_bank(QnameAtC_b, order["OrderID"], order["SaleAmount"], card, bank_info["MyAccount"], bank_info["MyPassword"], QflagName_b, QnameAtS_b, AflagName_b, AnameAtC_b, AnameAtS_b, bank_info["SendPort"], bank_info["ReceivePort"])
+        write_to_bank(QnameAtC_b, order["OrderID"], order["SaleAmount"], card, bank_info["MyAccount"], bank_info["MyPassword"], QflagName_b, QnameAtS_b, AflagName_b, AnameAtC_b, AnameAtS_b, bank_info["SendPort"], bank_info["ReceivePort"], bank_info["FilePath"])
         bank_confirmation = get_confirmation(AnameAtC_b)
         if int(bank_confirmation) != 0:
             print("Content-type:text/html\r\n\r\n")
@@ -97,7 +101,7 @@ def main():
         else:
             confirmations.append(int(bank_confirmation))
 
-        write_to_taxes(QnameAtC_t, order["OrderID"], order["SaleAmount"], card, mayor_info["MyAccount"], mayor_info["MyPassword"], QflagName_t, QnameAtS_t, AflagName_t, AnameAtC_t, AnameAtS_t, mayor_info["SendPort"], mayor_info["ReceivePort"])
+        write_to_taxes(QnameAtC_t, order["OrderID"], order["SaleAmount"], card, mayor_info["MyAccount"], mayor_info["MyPassword"], QflagName_t, QnameAtS_t, AflagName_t, AnameAtC_t, AnameAtS_t, mayor_info["SendPort"], mayor_info["ReceivePort"], mayor_info["FilePath"])
         tax_confirmation = get_confirmation(AnameAtC_t)
 
         if int(tax_confirmation) != 0:
@@ -106,7 +110,7 @@ def main():
         else:
             confirmations.append(int(tax_confirmation))
 
-        write_to_shipping(QnameAtC_s, order["OrderID"], order["ItemID"], order["Quantity"], shipping_method, address, ship_info["MyAccount"], ship_info["MyPassword"], QflagName_s, QnameAtS_s, AflagName_s, AnameAtC_s, AnameAtS_s, ship_info["SendPort"], ship_info["ReceivePort"])
+        write_to_shipping(QnameAtC_s, order["OrderID"], order["ItemID"], order["Quantity"], shipping_method, address, ship_info["MyAccount"], ship_info["MyPassword"], QflagName_s, QnameAtS_s, AflagName_s, AnameAtC_s, AnameAtS_s, ship_info["SendPort"], ship_info["ReceivePort"], ship_info["FilePath"])
         shipping_confirmation = get_confirmation(AnameAtC_s)
 
         if int(shipping_confirmation) != 0:
@@ -115,7 +119,7 @@ def main():
         else:
             confirmations.append(int(shipping_confirmation))
         #date in YYYY-MM-DD
-        write_to_IT(QnameAtC_i, order["OrderID"], order["ItemID"], order["Quantity"], order["SaleAmount"], card, shipping_method, address, it_info["MyAccount"], it_info["MyPassword"], QflagName_i, QnameAtS_i, AflagName_i, AnameAtC_i, AnameAtS_i, it_info["SendPort"], it_info["ReceivePort"])
+        write_to_IT(QnameAtC_i, order["OrderID"], order["ItemID"], order["Quantity"], order["SaleAmount"], card, shipping_method, address, it_info["MyAccount"], it_info["MyPassword"], QflagName_i, QnameAtS_i, AflagName_i, AnameAtC_i, AnameAtS_i, it_info["SendPort"], it_info["ReceivePort"], it_info["FilePath"])
         it_confirmation = get_confirmation(AnameAtC_i)
 
         if int(it_confirmation) != 0:
