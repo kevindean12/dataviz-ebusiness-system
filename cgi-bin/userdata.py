@@ -76,7 +76,9 @@ def main():
         print("Something's wrong", "tax confirmation says", tax_confirmation)
         remove_unsuccessful_order(conn, orderID)
     else:
-        tell_server_to_confirm()
+        receiptID = "021" + str(orderID)
+        deduct_quantity(conn, "6111105", quantity)
+        tell_server_to_confirm(receiptID)
     
     #seems a little too meta to track IT storage microtransactions as transactions
     #saving this just in case

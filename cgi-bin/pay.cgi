@@ -89,7 +89,7 @@ def main():
     QflagName_s, QnameAtC_s, QnameAtS_s, AflagName_s, AnameAtC_s, AnameAtS_s = flag_names("ship")
      #IT files
     QflagName_i, QnameAtC_i, QnameAtS_i, AflagName_i, AnameAtC_i, AnameAtS_i = flag_names("it")
-
+    
     #myID,mycustomer,mybank,customerbank,itemordered,quantity,totalamount,shipping
     confirmations = []
     for order in all_orders:

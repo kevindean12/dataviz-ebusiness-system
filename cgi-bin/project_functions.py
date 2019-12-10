@@ -38,7 +38,7 @@ def create_receipt(conn, sessionID):
     <tbody>"""
     for i in range(len(orderIDs)):
         html = html + f"""<tr>
-        <td>{orderIDs[i]}</td>
+        <td>{"020"+str(orderIDs[i])}</td>
         <td>{items[i]}</td>
         <td>{quantities[i]}</td>
         <td>{ships[i]}</td>
@@ -600,7 +600,7 @@ def set_guest_session(conn, sessionID):
         print("Content-type:text/html\r\n\r\n")
         print(err)
 
-def tell_server_to_confirm():
+def tell_server_to_confirm(orderID=""):
     while True:
         flag = open(f"../files/f-userdata_confirmation.txt")
         try:
@@ -611,7 +611,7 @@ def tell_server_to_confirm():
             break
         else:
             with open(f"../files/userdata_confirmation.txt", "w") as fout:
-                fout.write("0")
+                fout.writelines(["0", orderID])
             with open(f"../files/f-userdata_confirmation.txt", "w") as wflag:
                 wflag.write("1")
             flag.close()
@@ -724,13 +724,16 @@ def write_to_bank(QnameAtC, orderID, sale_amount, customer_account, my_account, 
             print(str(err))
             break
         else:
-            with open(f"../files/{QnameAtC}", "w") as fin:
-                fin.write(f"{orderID},{sale_amount},{customer_account},{my_account},{my_password}")
-            with open(f"../files/f-{QnameAtC}", "w") as flag:
-                flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"{user_filepath}{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"{user_filepath}{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
+        with open(f"../files/{QnameAtC}", "w") as fin:
+            fin.write(f"{orderID},{sale_amount},{customer_account},{my_account},{my_password}")
+            print("Content-type:text/html\r\n\r\n")
+            print(f"{orderID},{sale_amount},{customer_account},{my_account},{my_password}")
+            print("Written to ", QnameAtC)
+        with open(f"../files/f-{QnameAtC}", "w") as flag:
+            flag.write("1")
+        run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"{user_filepath}{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"{user_filepath}{AnameAtS}", sendPort, receivePort])
     
 #myID,mycustomer,mybank,customerbank,itemordered,quantity,totalamount,shipping
 def write_order_table(conn, item_ordered, customerID, quantity, shipping_method, card):
@@ -759,13 +762,13 @@ def write_to_taxes(QnameAtC, orderID, sale_amount, customer_account, my_tax_acct
             print(str(err))
             break
         else:
-            with open(f"../files/{QnameAtC}", "w") as fin:
-                fin.write(f"{orderID},{sale_amount},{customer_account},{my_tax_acct},{my_password}")
-            with open(f"../files/f-{QnameAtC}", "w") as flag:
-                flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"{user_filepath}{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"{user_filepath}{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
+        with open(f"../files/{QnameAtC}", "w") as fin:
+            fin.write(f"{orderID},{sale_amount},{customer_account},{my_tax_acct},{my_password}")
+        with open(f"../files/f-{QnameAtC}", "w") as flag:
+            flag.write("1")
+        run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"{user_filepath}{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"{user_filepath}{AnameAtS}", sendPort, receivePort])
 #myID,mycustomer,mybank,customerbank,itemordered,quantity,totalamount,shipping
 def write_to_shipping(QnameAtC, orderID, itemID, quantity, shipping_method, shipping_address, my_ship_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, sendPort, receivePort, user_filepath="../files/"):
     """Write shipping info.
@@ -781,13 +784,14 @@ def write_to_shipping(QnameAtC, orderID, itemID, quantity, shipping_method, ship
             print(str(err))
             break
         else:
-            with open(f"../files/{QnameAtC}", "w") as fin:
-                fin.write(f"{orderID},{itemID},{quantity},{shipping_method},{shipping_address},{my_ship_acct},{my_password}")
-            with open(f"../files/f-{QnameAtC}", "w") as flag:
-                flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"{user_filepath}{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"{user_filepath}{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
+        with open(f"../files/{QnameAtC}", "w") as fin:
+            fin.write(f"{orderID},{itemID},{quantity},{shipping_method},{shipping_address},{my_ship_acct},{my_password}")
+        with open(f"../files/f-{QnameAtC}", "w") as flag:
+            flag.write("1")
+        run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"{user_filepath}{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"{user_filepath}{AnameAtS}", sendPort, receivePort])
+            
 
 def write_to_IT(QnameAtC, orderID, itemID, quantity, sale_amount, customer_account, shipping_method, shipping_address, my_it_acct, my_password, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, sendPort, receivePort, user_filepath="../files/"):
     """Write order to (the other) IT data collection company.
@@ -803,13 +807,14 @@ def write_to_IT(QnameAtC, orderID, itemID, quantity, sale_amount, customer_accou
             print(str(err))
             break
         else:
-            with open(f"../files/{QnameAtC}", "w") as fin:
-                fin.write(f"{orderID},{itemID},{quantity},{sale_amount},{customer_account},{shipping_method},{shipping_address},{my_it_acct},{my_password}\n")
-            with open(f"../files/f-{QnameAtC}", "w") as flag:
-                flag.write("1")
-            run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"{user_filepath}{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"{user_filepath}{AnameAtS}", sendPort, receivePort])
             flag.close()
             break
+        with open(f"../files/{QnameAtC}", "w") as fin:
+            fin.write(f"{orderID},{itemID},{quantity},{sale_amount},{customer_account},{shipping_method},{shipping_address},{my_it_acct},{my_password}\n")
+        with open(f"../files/f-{QnameAtC}", "w") as flag:
+            flag.write("1")
+        run(["java","Client", f"../files/{QflagName}", f"../files/{QnameAtC}", f"{user_filepath}{QnameAtS}", f"../files/{AflagName}", f"../files/{AnameAtC}", f"{user_filepath}{AnameAtS}", sendPort, receivePort])
+            
 
 def write_user_transaction(conn, user_orderID, product_name, sellerID, sale_amount, quantity, shipping_method, inventory):
     update_user_product(conn, product_name, sellerID, inventory)
