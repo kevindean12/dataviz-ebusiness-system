@@ -68,6 +68,7 @@ def main():
     for i in range(len(productIDs)):
         oid = write_order_table(conn, productIDs[i], uid, quantities[i], shipping_method, card)
         orderIDs.append(oid)
+    confirmationIDs = ["020"+str(order) for order in orderIDs]
 
     all_orders = [
         {
@@ -131,6 +132,8 @@ def main():
         product_quantity = [(prod, quan) for prod, quan in zip(productIDs, quantities)]
         for tup in product_quantity:
             deduct_quantity(conn, tup[0], tup[1])
+        for order in zip(orderIDs, confirmationIDs):
+            write_confirmations(conn, order[0], order[1])
         delete_cart(conn, sessionID)
         receipt_table = create_receipt(conn, uid)
         print("Content-type:text/html\r\n\r\n")

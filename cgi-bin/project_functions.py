@@ -600,7 +600,7 @@ def set_guest_session(conn, sessionID):
         print("Content-type:text/html\r\n\r\n")
         print(err)
 
-def tell_server_to_confirm(orderID=""):
+def tell_server_to_confirm(confirm_num=""):
     while True:
         flag = open(f"../files/f-userdata_confirmation.txt")
         try:
@@ -611,7 +611,7 @@ def tell_server_to_confirm(orderID=""):
             break
         else:
             with open(f"../files/userdata_confirmation.txt", "w") as fout:
-                fout.writelines(["0", orderID])
+                fout.writelines(["0", confirm_num])
             with open(f"../files/f-userdata_confirmation.txt", "w") as wflag:
                 wflag.write("1")
             flag.close()
@@ -686,6 +686,17 @@ def write_cart(conn, userID, product_name, quantity):
         additional_quantity = int(response["Quantity"])
         total_quantity = additional_quantity + int(quantity)
         update_quantity(conn, total_quantity, userID, productID)
+
+def write_confirmations(conn, orderID, confirm_num):
+    sql = "UPDATE Order_T SET Order_Confirmation = %s WHERE OrderID = %s"
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (confirm_num, orderID))
+        conn.commit()
+    except Exception as err:
+        print("Content-type:text/html\r\n\r\n")
+        print(err)
+
 
 def write_order_request(QnameAtC, product, quantity, myusername, mypassword, QflagName, QnameAtS, AflagName, AnameAtC, AnameAtS, sendPort, receivePort, user_filepath="../files/"):
     """Writes a txt file for the B2B order and update flag file to indicate
