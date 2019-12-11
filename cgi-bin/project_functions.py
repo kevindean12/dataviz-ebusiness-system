@@ -522,12 +522,25 @@ def receive_userdata():
             print(err)
             break
         else:
-            with open(f"../files/userdata.txt") as fin:
-                data = fin.readlines()
-            with open(f"../files/f-userdata.txt", "w") as wflag:
-                wflag.write("0")
             flag.close()
             break
+        #  with open(f"../files/userdata.txt") as fin:
+        #     data = fin.readlines()
+        # for line in data: #failsafe in case I receive data from the plugin
+        #     if "dontread" in line:
+        #         data = None
+        # if data == None:
+        #     with open(f"../files/o-Q-it.dat") as fin:
+        #         data = fin.readlines()
+        # with open(f"../files/f-userdata.txt", "w") as wflag:
+        #     wflag.write("0")
+        # with open(f"../files/userdata.txt", "w") as stopper:
+        #     stopper.write("dontread")
+        with open(f"../files/userdata.txt") as fin:
+            data = fin.readlines()
+        with open(f"../files/f-userdata.txt", "w") as wflag:
+            wflag.write("0")
+            
     return data
 
 def remove_from_cart(conn, productID, userID):
